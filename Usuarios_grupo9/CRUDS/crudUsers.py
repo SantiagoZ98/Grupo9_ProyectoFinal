@@ -1,12 +1,13 @@
 import mysql.connector
 from mysql.connector import Error
 import base64
-from conexion.unionDB import DBHelper
+from Usuarios_grupo9.conexion.unionDB import DBHelper
 
 #Recibe la instancia que maneja la base de datos
 class CRUDOperations:
     def __init__(self, db_helper):
         self.db_helper = db_helper
+
 #Crear nuevo usuario
     def createUsuario(self, nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad):
 
@@ -14,9 +15,9 @@ class CRUDOperations:
             #Creo una instancia en el cursor
             cursor = self.db_helper.connection.cursor()
             cursor.execute("""
-                INSERT INTO Usuarios (nombres,apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad)
+                INSERT INTO Usuarios (nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad)
                 VALUES (%s, %s, %s, %s, %s, %s)
-                """, nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad)
+            """, (nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad))
             # Confirmar la transacción
             self.db_helper.connection.commit()
 
@@ -24,20 +25,20 @@ class CRUDOperations:
             return {'message': 'Usuario creado exitosamente'}
 
         except Error as ex:
-            print(f'Error de pyodbc: {ex}')
+            print(f'Error de MySQL: {ex}')
             raise
 
         finally:
             # Cerrar el cursor
             cursor.close()
-#Eliminar usuarios
 
+#Eliminar usuarios
     def delete_usuario(self, id_usuario):
         try:
             cursor = self.db_helper.connection.cursor()
 
             # Eliminar usuario por ID
-            cursor.execute("DELETE FROM Usuarios WHERE id_usuario = ?", id_usuario)
+            cursor.execute("DELETE FROM Usuarios WHERE id_usuario = %s", (id_usuario,))
 
             # Confirmar la transacción
             self.db_helper.connection.commit()
@@ -54,7 +55,7 @@ class CRUDOperations:
     def read_all_usuarios(self):
         try:
             # Crear una instancia de cursor
-            cursor = self.db_helper.connection.cursor()
+            cursor = self.db_helper.connection.cursor(dictionary=True)
 
             # Ejecutar la consulta para obtener todos los usuarios
             cursor.execute(
@@ -63,27 +64,16 @@ class CRUDOperations:
             # Obtener todas las filas resultantes
             usuarios = cursor.fetchall()
 
-            # Convertir las filas a un formato más adecuado
-            result = []
-            for row in usuarios:
-                usuario = {
-                    'id_usuario': row.id_usuario,
-                    'nombres': row.nombres,
-                    'apellidos' : row.apellidos,
-                    'correo_electronico': row.correo_electronico,
-                    'contrasena' : row.contrasena,
-                    'fecha_de_nacimiento': row.fecha_de_nacimiento,
-                    'cedula_identidad': row.cedula_identidad
-                }
-            return result
+            return usuarios
 
-        except Error as ex:
-            print(f'Error de pyodbc: {ex}')
+        except mysql.connector.Error as ex:
+            print(f'Error de MySQL: {ex}')
             raise
 
         finally:
             # Cerrar el cursor
-            cursor.close()
+            if 'cursor' in locals() and cursor is not None:
+                cursor.close()
 
 #Actualizar un usuario existente
     def update_usuario(self, id_usuario, nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad):
@@ -91,12 +81,12 @@ class CRUDOperations:
             # Crear una instancia de cursor
             cursor = self.db_helper.connection.cursor()
 
-            # Ejecutar la consulta para actualizar el usuario
             cursor.execute("""
-                UPDATE Usuarios
-                SET nombres = ?, apellidos = ?, correo_electronico = ?, contrasena = ?, fecha_de_nacimiento = ?, cedula_identidad = ?
-                WHERE id_usuario = ?
-            """, nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad, id_usuario)
+                      UPDATE Usuarios
+                      SET nombres = %s, apellidos = %s, correo_electronico = %s, contrasena = %s, fecha_de_nacimiento = %s, cedula_identidad = %s
+                      WHERE id_usuario = %s
+                   """, (
+            nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad, id_usuario))
 
             # Confirmar la transacción
             self.db_helper.connection.commit()

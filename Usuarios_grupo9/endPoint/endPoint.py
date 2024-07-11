@@ -1,8 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from conexion.unionDB import DBHelper
-from CRUDS.crudUsers import CRUDOperations
-from Inteligencia.Consulta import InferenceService
+from Usuarios_grupo9.conexion.unionDB import DBHelper
+from Usuarios_grupo9.CRUDS.crudUsers import CRUDOperations
+#from Usuarios_grupo9.InteligenciArtif.Consulta import InferenceService
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import JWTManager
 
@@ -13,41 +13,54 @@ CORS(app,  origins='http://localhost:3000')
 jwt = JWTManager(app)
 
 # Configuración de la base de datos
-db_helper = DBHelper(server='localhost', database='usuarios', username='root', password='adminkvn-12345')
+db_helper = DBHelper(host='localhost',
+                     database='crud_usuarios',
+                     user='root',
+                     password='adminkvn-12345')
 
 # Inicializar la clase CRUDOperations con el objeto DBHelper
 crud_usuarios = CRUDOperations(db_helper)
 
-inference_service = InferenceService()
+#inference_service = InferenceService()
 
 # Endpoint create_new_usuario
 @app.route('/api/usuarios', methods=['POST'])
 def create_new_usuario():
     try:
         # Obtener datos del cuerpo de la solicitud
-        nombres = request.form['nombres']
-        apellidos = request.form['apellidos']
-        correo_electronico = request.form['correo_electronico']
-        contrasena = request.form['contrasena']
-        fecha_de_nacimiento = request.form['fecha_de_nacimiento']
-        cedula_identidad = request.form['cedula_identidad']
+        data = request.get_json()
+
+        # Validar que todos los campos requeridos estén presentes
+        required_fields = ['nombres', 'apellidos', 'correo_electronico', 'contrasena', 'fecha_de_nacimiento',
+                           'cedula_identidad']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({'error': f'Todos los campos son requeridos: {field}'}), 400
+
+        nombres = data['nombres']
+        apellidos = data['apellidos']
+        correo_electronico = data['correo_electronico']
+        contrasena = data['contrasena']
+        fecha_de_nacimiento = data['fecha_de_nacimiento']
+        cedula_identidad = data['cedula_identidad']
 
         # Conectar a la base de datos
         db_helper.connect()
 
         # Crear un nuevo usuario
-        result = crud_usuarios.create_usuario(nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad)
+        result = crud_usuarios.createUsuario(nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento,
+                                             cedula_identidad)
 
         # Devolver el resultado como respuesta
         return jsonify(result)
 
     except Exception as ex:
-        # Manejar errores
+        # Manejar otros errores
         return jsonify({'error': str(ex)}), 500
-
     finally:
         # Cerrar la conexión
-        db_helper.close()
+        if db_helper.connection:
+            db_helper.close()
 
 # Endpoint para eliminar un usuario por ID
 @app.route('/api/usuarios/<int:id_usuario>', methods=['DELETE'])
@@ -77,20 +90,30 @@ def update_usuario(id_usuario):
         db_helper.connect()
 
         # Obtener datos del cuerpo de la solicitud
-        nombres = request.form['nombres']
-        apellidos = request.form['apellidos']
-        correo_electronico = request.form['correo_electronico']
-        contrasena = request.form['contrasena']
-        fecha_de_nacimiento = request.form['fecha_de_nacimiento']
-        cedula_identidad = request.form['cedula_identidad']
+        data = request.get_json()
+
+        # Validar que todos los campos necesarios están presentes
+        required_fields = ['nombres', 'apellidos', 'correo_electronico', 'contrasena', 'fecha_de_nacimiento',
+                           'cedula_identidad']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Falta el campo requerido: {field}'}), 400
+
+        nombres = data['nombres']
+        apellidos = data['apellidos']
+        correo_electronico = data['correo_electronico']
+        contrasena = data['contrasena']
+        fecha_de_nacimiento = data['fecha_de_nacimiento']
+        cedula_identidad = data['cedula_identidad']
 
         # Actualizar el usuario
-        result = crud_usuarios.update_usuario(id_usuario, nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad)
+        result = crud_usuarios.update_usuario(id_usuario, nombres, apellidos, correo_electronico, contrasena,
+                                              fecha_de_nacimiento, cedula_identidad)
 
         return jsonify(result)
 
     except Exception as ex:
-        # Manejar errores
+        # Manejar otros errores
         return jsonify({'error': str(ex)}), 500
 
     finally:
@@ -107,16 +130,16 @@ def get_all_usuarios():
         # Obtener todos los usuarios
         usuarios = crud_usuarios.read_all_usuarios()
 
-        # Devolver los usuarios como respuesta
+        # Devolver los usuarios como JSON
         return jsonify(usuarios)
 
     except Exception as ex:
-        # Manejar errores
+        # Manejar otros errores
         return jsonify({'error': str(ex)}), 500
-
     finally:
         # Cerrar la conexión
         db_helper.close()
+
 
 # Endpoint para obtener un usuario por su ID
 @app.route('/api/usuarios/<int:id_usuario>', methods=['GET'])

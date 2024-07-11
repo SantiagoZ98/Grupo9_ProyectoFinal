@@ -29,7 +29,7 @@ class DBHelper:
             print('Conexión cerrada')
 
 # Uso de la clase DBHelper
-db = DBHelper('localhost', 'crudUsuarios', 'root', 'adminkvn-12345')
+db = DBHelper('localhost', 'crud_usuarios', 'root', 'adminkvn-12345')
 db.connect()
 # Realizar operaciones con la base de datos
 db.close()

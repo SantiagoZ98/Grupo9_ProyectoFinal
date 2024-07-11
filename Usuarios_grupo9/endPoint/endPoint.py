@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from conexion.unionDB import DBHelper
 from CRUDS.crudUsers import CRUDOperations
-from Inteligencia.Consulta import InferenceService
+from InteligenciArtif.Consulta import InferenceService
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import JWTManager
 

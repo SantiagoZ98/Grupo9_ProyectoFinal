@@ -3,6 +3,7 @@ from flask_cors import CORS
 from conexion.unionDB import DBHelper
 from CRUDS.crudUsers import CRUDOperations
 from Inteligencia.Consulta import InferenceService
+import bcrypt
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import JWTManager
 
@@ -149,19 +150,23 @@ def get_user_id():
         correo_electronico = data.get('correo_electronico')
         contrasena = data.get('contrasena')
 
+        if not correo_electronico or not contrasena:
+            return jsonify({'error': 'Correo electrónico y contraseña son requeridos'}), 400
+
         # Conectar a la base de datos y verificar las credenciales del usuario
         db_helper.connect()
-        usuario = crud_usuarios.find_usuario_by_credentials(correo_electronico, contrasena)
+        usuario = crud_usuarios.find_usuario_by_email(correo_electronico)
 
-        if usuario:
-            # Si se encontró el usuario, devolver su ID en la respuesta
+        if usuario and bcrypt.checkpw(contrasena.encode('utf-8'), usuario['hashed_password'].encode('utf-8')):
+            # Si se encontró el usuario y la contraseña es correcta, devolver su ID en la respuesta
             return jsonify({'id_usuario': usuario['id_usuario']}), 200
         else:
             return jsonify({'error': 'Credenciales incorrectas'}), 401
 
     except Exception as ex:
         # Manejar otros errores
-        return jsonify({'error': str(ex)}), 500
+        app.logger.error(f"Error during login: {str(ex)}")
+        return jsonify({'error': 'Ocurrió un error interno'}), 500
 
     finally:
         # Cerrar la conexión a la base de datos

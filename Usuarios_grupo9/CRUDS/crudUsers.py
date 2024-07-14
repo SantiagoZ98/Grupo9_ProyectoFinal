@@ -85,8 +85,7 @@ class CRUDOperations:
                       UPDATE Usuarios
                       SET nombres = %s, apellidos = %s, correo_electronico = %s, contrasena = %s, fecha_de_nacimiento = %s, cedula_identidad = %s
                       WHERE id_usuario = %s
-                   """, (
-            nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad, id_usuario))
+                   """, (nombres, apellidos, correo_electronico, contrasena, fecha_de_nacimiento, cedula_identidad, id_usuario))
 
             # Confirmar la transacción
             self.db_helper.connection.commit()
@@ -106,7 +105,7 @@ class CRUDOperations:
     def find_usuario_by_credentials(self, correo_electronico, contrasena):
         try:
             # Crear una instancia de cursor
-            cursor = self.db_helper.connection.cursor()
+            cursor = self.db_helper.connection.cursor(dictionary = True)
 
             # Ejecutar la consulta para buscar un usuario por correo electrónico y contraseña
             cursor.execute("""
@@ -118,20 +117,7 @@ class CRUDOperations:
             # Obtener el primer usuario que coincida (o None si no hay coincidencias)
             usuario = cursor.fetchone()
 
-            # Si se encontró un usuario, devolverlo en un formato adecuado
-            if usuario:
-                result = {
-                    'id_usuario': usuario[0],
-                    'nombres': usuario[1],
-                    'apellidos': usuario[2],
-                    'correo_electronico': usuario[3],
-                    'contrasena': usuario[4],
-                    'fecha_de_nacimiento': usuario[5],
-                    'cedula_identidad': usuario[6]
-                }
-                return result
-            else:
-                return None
+            return usuario
 
         except Error as ex:
             print(f'Error de MySQL: {ex}')

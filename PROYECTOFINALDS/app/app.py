@@ -1,13 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, make_response
 from flask_weasyprint import HTML, render_pdf
 from models.models import Usuario, agregar_usuario, obtener_usuario_por_correo, existe_usuario
-from pymongo import MongoClient
-import openai
 
-# Conexión a MongoDB
-client = MongoClient('mongodb://localhost:27017/')
-db = client['C']  # Cambia al nombre de tu BD
-o.api_key = 'tu clave aqui'
+import openai
 
 
 app = Flask(__name__, static_folder='static')
@@ -25,7 +20,7 @@ def registro():
         correo = request.form['correo']
         contraseña = request.form['contraseña']
         if existe_usuario(correo):
-            flash('El correo electrónico ya está registrado.', 'error')
+            flash('Su correo electronico ya se encuentra registrado.', 'error')
         else:
             nuevo_usuario = Usuario(nombre, correo, contraseña)
             agregar_usuario(nuevo_usuario)
@@ -33,8 +28,8 @@ def registro():
         return redirect(url_for('index'))
     return render_template('Index.html')
 
-@app.route('/inicio_sesion', methods=['GET', 'POST'])
-def inicio_sesion():
+@app.route('/login', methods=['GET', 'POST'])
+def login():
     if request.method == 'POST':
         correo = request.form['correo']
         contraseña = request.form['contraseña']
@@ -61,16 +56,6 @@ def principal():
     return render_template('principal.html')
 
 
-@app.route('/guardar_respuesta', methods=['POST'])
-def guardar_respuesta():
-    data = request.get_json()
-    texto = data['texto']
-    imagen_actual = data['imagen_actual']
-    db.respuestas.insert_one({
-        'etiqueta': imagen_actual,
-        'texto': texto
-    })
-    return jsonify({"mensaje": "Guardado exitosamente"})
 
 @app.route('/perfil')
 def perfil():
@@ -109,21 +94,6 @@ def descargar_resultados():
         )
         return response.choices[0].text.strip()
 
-    # Obtener respuestas de la base de datos
-    respuestas = db.respuestas.find({})
-    diagnosticos = []
-
-    # Generar diagnósticos para cada respuesta
-    for respuesta in respuestas:
-        etiqueta = respuesta['etiqueta']
-        texto_usuario = respuesta['texto']
-        prompt = construir_prompt(etiqueta, texto_usuario)
-        diagnostico = generar_diagnostico(prompt)
-        diagnosticos.append((etiqueta, diagnostico))
-
-    # Renderizar y devolver el PDF
-    html = render_template('resultados_pdf.html', diagnosticos=diagnosticos)
-    return render_pdf(HTML(string=html))
 
 
 

@@ -1,9 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, make_response
-from Usuarios_grupo9.conexion.unionDB import DBHelper
-from Usuarios_grupo9.CRUDS.crudUsers import CRUDOperations
-import bcrypt
-from flask_jwt_extended import create_access_token, JWTManager
-from flask_cors import CORS
+from flask_weasyprint import HTML, render_pdf
+from models.models import Usuario, agregar_usuario, obtener_usuario_por_correo, existe_usuario
+from pymongo import MongoClient
+import openai
+
+# Conexión a MongoDB
+client = MongoClient('mongodb://localhost:27017/')
+db = client['C']  # Cambia al nombre de tu BD
+o.api_key = 'tu clave aqui'
+
 
 app = Flask(__name__, static_folder='static')
 app.secret_key = 'Kszs2298'
@@ -24,8 +29,8 @@ def registro():
     if request.method == 'POST':
         nombre = request.form['nombres_completos']
         correo = request.form['correo']
-        contrasena = request.form['contraseña']
-        if crud_usuarios.existe_usuario(correo):
+        contraseña = request.form['contraseña']
+        if existe_usuario(correo):
             flash('El correo electrónico ya está registrado.', 'error')
         else:
             contrasena_hash = bcrypt.hashpw(contrasena.encode('utf-8'), bcrypt.gensalt())
@@ -39,8 +44,8 @@ def registro():
         return redirect(url_for('index'))
     return render_template('Index.html')
 
-@app.route('/inicio_sesion', methods=['GET', 'POST'])
-def inicio_sesion():
+@app.route('/login', methods=['GET', 'POST'])
+def login():
     if request.method == 'POST':
         correo = request.form['correo']
         contrasena = request.form['contraseña']
@@ -66,14 +71,16 @@ def funcionamiento():
 def principal():
     return render_template('principal.html')
 
+
 @app.route('/guardar_respuesta', methods=['POST'])
 def guardar_respuesta():
     data = request.get_json()
     texto = data['texto']
     imagen_actual = data['imagen_actual']
-    db_helper.connect()
-    db_helper.execute("INSERT INTO respuestas (etiqueta, texto) VALUES (%s, %s)", (imagen_actual, texto))
-    db_helper.close()
+    db.respuestas.insert_one({
+        'etiqueta': imagen_actual,
+        'texto': texto
+    })
     return jsonify({"mensaje": "Guardado exitosamente"})
 
 @app.route('/perfil')
@@ -95,17 +102,33 @@ def descargar_resultados():
             descripcion = "Interpretación general."
         return f"Interpretar la respuesta '{texto_usuario}' para la imagen {etiqueta}: {descripcion}"
 
-    db_helper.connect()
-    respuestas = db_helper.fetch_all("SELECT etiqueta, texto FROM respuestas")
-    db_helper.close()
-    
+
+    # Función para generar el diagnóstico con OpenAI
+    def generar_diagnostico(texto_prompt):
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=texto_prompt,
+            temperature=0.7,
+            max_tokens=150,
+            top_p=1.0,
+            frequency_penalty=0.0,
+            presence_penalty=0.0
+        )
+        return response.choices[0].text.strip()
+
+    # Obtener respuestas de la base de datos
+    respuestas = db.respuestas.find({})
     diagnosticos = []
+
+    # Generar diagnósticos para cada respuesta
     for respuesta in respuestas:
-        etiqueta, texto_usuario = respuesta
+        etiqueta = respuesta['etiqueta']
+        texto_usuario = respuesta['texto']
         prompt = construir_prompt(etiqueta, texto_usuario)
-        diagnostico = "Genera tu diagnóstico aquí basado en el prompt"  # Simula la respuesta del diagnóstico
+        diagnostico = generar_diagnostico(prompt)
         diagnosticos.append((etiqueta, diagnostico))
 
+    # Renderizar y devolver el PDF
     html = render_template('resultados_pdf.html', diagnosticos=diagnosticos)
     return render_pdf(HTML(string=html))
 

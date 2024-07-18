@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+<style>
+#texto {
+    font-family: 'Montserrat', sans-serif; /* Aplicar la fuente Montserrat */
+}
+</style>
+<title>Perfil</title>
+
+<link rel="stylesheet" href="/app/static/css/styleperfil.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styleperfil.css') }}">
+<script src="/app/static/js/scriptperfil.js"></script>   
+<script src="{{ url_for('static', filename='js/scriptperfil.js') }}"></script>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="header">
+            <div class="test-title">RESULTADOS DEL EXAMEN</div>
+            <div class="logo-container">
+                <img src="../static/img/loglat.jpeg" width="300">
+            </div>
+    </div>
+        
+    <div class="content">
+        <div class="containerizquierda">
+            
+                <div class="subcontainer">
+                    <h3>Recomendaciones</h3>
+                    <h4>Verifica los resultados con un medico de confianza</h4>
+                    <h4></h4>
+                </div>
+                <div class="subcontainer">
+                    <h3>Videos Recomendados</h3>
+                    
+                </div>
+                <div class="subcontainer">
+                    <img src="../static/img/funciona.gif" alt="Imagen del robot">  
+                </div>
+            
+        </div>
+
+        <div class="containercenter">
+            <div class="subcontainer">
+                <h3>DATOS DEL USUARIO</h3>
+                <ul style="text-align: left; list-style-type: none; padding: 0;">
+                    <li><strong>Nombre:</strong> {{usuario.nombres}} {{usuario.apellidos}}</li>
+                    <li><strong>Cédula de Identidad:</strong> {{usuario.cedula_identidad}} </li>
+                    <li><strong>Correo electrónico:</strong> {{usuario.correo_electronico}} </li>
+                    <li><strong>Edad:</strong> {{edad}} años</li>
+                    <li><strong>Genero:</strong> Masculino </li>
+                    
+                    
+                    <li><strong>Intereses:</strong> Musica, Bailar,Caminatas</li>
+                </ul>
+            </div>
+                <div class="subcontainer">
+                    <div class="split-container">
+                        <div class="top-section">
+                            <h3></h3>
+                            <p>https://www.youtube.com/watch?v=AoOcKHss94c&ab_channel=IESSecu </p>
+                        </div>
+                        <div class="bottom-section">
+                        </div>
+                    </div>
+                </div>
+                <div class="subcontainer">
+                    <div class="split-container">
+                        <div class="top-section">
+                            <h3>DIAGNÓSTICO</h3>
+                            
+                        </div>
+                        <div class="bottom-section">
+                        </div>
+                    </div>
+                </div>
+                <div class="subcontainer">
+                    <div class="split-container">
+                        <div class="top-section">
+                            <h3>RECOMENDACIONES</h3>
+                            <p>{{ analysis }}</p>
+                            <p></p>
+                        </div>
+                        <div class="bottom-section">
+                        </div>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button class="btn">FINALIZAR</button>
+                </div>
+        </div>    
+
+        <div class="containerderecha">
+            <div class="subcontainer">
+                <h3>Proximo Examen</h3>
+                            <p>Se recomienda realizar examenes una vez al año o cada 6 meses</p>
+                            <p></p>
+            </div>
+            <div class="subcontainer">
+                <img src="../static/img/perfdere.gif" alt="Imagen del robot">  
+            </div>
+        </div>    
+    </div>
+</div>
+</body>
+</html>

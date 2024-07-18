@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Preconexión a Google Fonts para carga más rápida -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Enlace a Google Fonts - Montserrat -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+  <!-- Enlace a hojas de estilos CSS externas -->
+  <link rel="stylesheet" href="/app/static/css/stylePrincpial.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/stylePrincpial.css') }}">
+
+  <!-- Enlace a archivos JavaScript externos -->
+  <script src="/app/static/js/scriptPrincipal.js"></script>
+  <script src="{{ url_for('static', filename='js/scriptPrincipal.js') }}"></script>
+
+  <!-- Estilos CSS internos para estilos específicos -->
+  <style>
+    #texto {
+      font-family: 'Montserrat', sans-serif; /* Aplicar la fuente Montserrat */
+    }
+  </style>
+
+  <title>Principal</title>
+</head>
+
+<body>
+  <div class="main-container">
+    
+    <!-- Sección de Encabezado -->
+    <div class="header">
+      <div class="test-title">EXAMENES REALIZADOS</div>
+      <div class="logo-container">
+        <img src="../static/img/loglat.jpeg" alt="Imagen del logo">
+      </div>
+    </div>
+
+    <!-- Sección Principal de Contenido -->
+    <div class="content">
+
+      <!-- Columna Izquierda -->
+      <div class="left-column">
+        <div class="containertext">
+          <div class="card h2" id="text-container"></div>
+          <h2>
+            <form action="/perfil" method="get" enctype="multipart/form-data">
+              <input type="file" name="file-upload" id="file-upload">
+            </form>
+          </h2>
+        </div>
+        
+        <div class="profile-container"></div>
+        <div class="timer" id="timer">00:00:01</div>
+      </div>
+
+      <div class="profile-upload">
+        <h1>Upload Medical History</h1>
+        <form action="upload_image" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" required>
+            <textarea name="additional_text" id="texto" cols="93" rows="5" placeholder="Ingrese información adicional sobre síntomas u otros detalles relevantes"></textarea>
+            <button type="submit">Upload</button>
+        </form>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Columna Central -->
+      <div class="center-column">
+        <div class="containertext">
+          <div class="card h2" id="text-container"></div>
+          <h2 id="text1" class="text active">Aquí puedes agregar si tienes algún síntoma.</h2>
+        </div>
+        <div class="textarea-container">
+          <textarea id="texto" cols="93" rows="5"></textarea>
+          <div class="footer2">
+            <button id="btnStartRecord" class="button">Grabar</button>
+            <button id="btnStopRecord" class="button">Finalizar</button>
+          </div>
+        </div>
+      </div>
+      <!-- Columna Derecha -->
+      <div class="right-column">
+        <div class="robot-container">
+          <img src="../static/img/perfdere.gif" width="400" >
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de Pie de Página -->
+    <div class="footer">
+      <form action="perfil" method="get">
+        <input type="submit" value="Continuar" onclick="animateContainer()">
+      </form>
+    </div>
+  </div>
+</body>
+
+</html>
